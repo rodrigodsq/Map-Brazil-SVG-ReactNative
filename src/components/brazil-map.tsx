@@ -1,98 +1,71 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useCallback } from 'react';
-import { FlexStyle, SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
-import Svg, { Circle, G, Path, Text as TextSvg } from 'react-native-svg';
-import { DataStates, Regions, StateBr, States } from '../models/br-states.model';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import Svg, { G, Path, Text as TextSvg } from 'react-native-svg';
+import { DataStates, Regions, ResizeRegions, StateBr, States } from '../models/br-states.model';
 
 const BrazilMap: React.FC = () => {
 
     const windowWidth = useWindowDimensions().width;
-
-    const [hide, setHide] = useState<boolean>(false);
-    const [widthScreen, setWidthScreen] = useState<number>(windowWidth);
-    const [heightScreen, setHeightScreen] = useState<number>(460);
-    const [windowBox, setWindowBox] = useState<number>(windowWidth);
-    const [stateSelect, setStateSelect] = useState<string>();
+    const [stateSelect, setStateSelect] = useState<States>();
     const [regionSelect, setRegionSelect] = useState<Regions>(Regions.Todas);
-    const [mLeft, setMLeft] = useState<number>(0);
+    const [resizeRegion, setResizeRegion] = useState<ResizeRegions>({
+        width: 0,
+        height: 460,
+        box: 0,
+        mleft: 0,
+        mtop: 0
+    });
 
-    // useEffect(() => {
-    //     console.log(`effect = ${regionSelect}`);
-    // }, [regionSelect]);
+    useEffect(() => {
+        console.log(`effect = renderizou!!`);
+    }, []);
 
-    const handleSelected = useCallback((state: string) => {
-        console.log('params ' + state);
-        setStateSelect(state);
-        const region: Regions = {
-            // [States.BA]: Regions.Nordeste,
-            'ba': Regions.Nordeste,
-            'am': Regions.Norte,
-            'go': Regions.Centroeste,
-            'sp': Regions.Sudeste,
-            'rs': Regions.Sul,
-        }[state] || Regions.Todas;
+    const handleSelected = useCallback((state: StateBr) => {
+        setStateSelect(state.id);
+        setRegionSelect(prevState => prevState === state.region ? Regions.Todas : state.region);
+    }, []);
 
-        console.log(`region is ${region}`);
-
-        console.log(`region: ${region} && currentRegion: ${regionSelect}`);
-
-        //setRegionSelect(prevState => prevState === region ? Regions.Todas : region);
-
-        if(region === regionSelect)
-        {
-            setHide(false);
-            setRegionSelect(Regions.Todas)
-            return
-        }
-
-        setHide(true);
-        setRegionSelect(region);
-    }, [regionSelect, hide]);
+    const handleResizeMap = useCallback((
+        width: number, height: number, box: number, mleft: number, mtop: number
+    ) => {
+        setResizeRegion({
+            width: windowWidth + width,
+            height: height,
+            box: windowWidth - box,
+            mleft,
+            mtop
+        });
+    }, [])
 
     useMemo(() => {
-        if(!hide)
-        {
-            setWidthScreen(windowWidth)
-            setHeightScreen(460)
-            setWindowBox(windowWidth)
-            setMLeft(0);
-            return;
+        switch (regionSelect) {
+            case Regions.Nordeste:
+                handleResizeMap(250, 650, 0, -320, -50)
+                break;
+            case Regions.Norte:
+                handleResizeMap(170, 520, 300, -180, 50)
+                break;
+            case Regions.Centroeste:
+                handleResizeMap(150, 570, 170, -170, -100)
+                break;
+            case Regions.Sudeste:
+                handleResizeMap(450, 700, 150, -480, -250)
+                break;
+            case Regions.Sul:
+                handleResizeMap(150, 700, 110, -180, -370)
+                break;
+            default:
+                handleResizeMap(0, 460, 0, 0, 0)
+                break;
         }
-
-        if(hide && regionSelect === Regions.Nordeste)
-        {
-            setWidthScreen(windowWidth + 250)
-            setHeightScreen(650)
-            setWindowBox(windowWidth - 0)
-            setMLeft(-400)
-            return;
-        }
-
-        if(hide && regionSelect === Regions.Norte)
-        {
-            setWidthScreen(windowWidth + 200)
-            setHeightScreen(520)
-            setWindowBox(windowWidth - 300)
-            setMLeft(-180)
-            return;
-        }
-
-        // to be continued
-        setWidthScreen(windowWidth + (hide ? 400 : 0))
-        setHeightScreen(460 + (hide ? 200 : 0))
-        setWindowBox(windowWidth - (hide ? 0 : 0))
-
-        // setWidthScreen(windowWidth + (hide ? 300 : 0))
-        // setHeightScreen(460 + (hide ? 200 : 0))
-        // setWindowBox(windowWidth - (hide ? 0 : 0))
-    }, [hide, widthScreen, heightScreen, windowBox, mLeft]);
+    }, [regionSelect]);
 
     const renderMap = useCallback((states: Array<StateBr>) =>
     {
       return  states.map(state => (
                 <View key={state.id}>
                     <Path
-                        onPress={() => handleSelected(state.id)}
+                        onPress={() => handleSelected(state)}
                         id={state.id}
                         fill={state.pathFill}
                         stroke={state.stroke}
@@ -110,20 +83,16 @@ const BrazilMap: React.FC = () => {
 
 return (
     <SafeAreaView>
-        <View>
-            <Text>widthScreen{widthScreen}</Text>
-            <Text>heightScreen{heightScreen}</Text>
-            <Text>windowBox{windowBox}</Text>
-            <Text>hide{hide}</Text>
-            <Text>regionSelect{regionSelect}</Text>
+        <View style={{backgroundColor: 'red', flexDirection: 'row', width: '100%'}}>
+            <Text style={{flex: 1}}>Selecione uma Região</Text>
         </View>
         <ScrollView horizontal>
             <Svg
                 id="svg-map"
-                style={hide && {marginLeft: mLeft}}
-                width={widthScreen + 10}
-                height={heightScreen}
-                viewBox={`0 0 ${windowBox + 80} 460`}>
+                style={regionSelect !== Regions.Todas && {marginLeft: resizeRegion.mleft, marginTop: resizeRegion.mtop}}
+                width={resizeRegion.width + 10}
+                height={resizeRegion.height}
+                viewBox={`0 0 ${resizeRegion.box + 80} 460`}>
                 {
                    (regionSelect === Regions.Nordeste || regionSelect === Regions.Todas) &&
                     <G id='nordeste'>

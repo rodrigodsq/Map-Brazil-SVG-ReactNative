@@ -40,6 +40,15 @@ export enum Regions
     Todas = 'Todas'
 }
 
+export interface ResizeRegions
+{
+    width: number;
+    height: number;
+    box: number;
+    mleft: number;
+    mtop: number;
+}
+
 interface RegionsBr
 {
     norte: Array<StateBr>;
@@ -51,7 +60,7 @@ interface RegionsBr
 
 export interface StateBr
 {
-    id: string,
+    id: States,
     name: string,
     region: Regions,
     pathFill: string,
