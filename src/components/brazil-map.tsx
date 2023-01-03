@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { SafeAreaView, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Svg, { G, Path, Text as TextSvg } from 'react-native-svg';
 import { DataStates, Regions, ResizeRegions, StateBr, States } from '../models/br-states.model';
+import { AntDesign } from '@expo/vector-icons';
+
 
 const BrazilMap: React.FC = () => {
 
@@ -16,13 +18,9 @@ const BrazilMap: React.FC = () => {
         mtop: 0
     });
 
-    useEffect(() => {
-        console.log(`effect = renderizou!!`);
-    }, []);
-
-    const handleSelected = useCallback((state: StateBr) => {
-        setStateSelect(state.id);
-        setRegionSelect(prevState => prevState === state.region ? Regions.Todas : state.region);
+    const handleSelected = useCallback((state: States | undefined, region: Regions) => {
+        setStateSelect(state);
+        setRegionSelect(region);
     }, []);
 
     const handleResizeMap = useCallback((
@@ -40,19 +38,19 @@ const BrazilMap: React.FC = () => {
     useMemo(() => {
         switch (regionSelect) {
             case Regions.Nordeste:
-                handleResizeMap(250, 650, 0, -320, -50)
+                handleResizeMap(250, 650, 0, -320, -100)
                 break;
             case Regions.Norte:
-                handleResizeMap(170, 520, 300, -180, 50)
+                handleResizeMap(170, 520, 300, -180, 0)
                 break;
             case Regions.Centroeste:
-                handleResizeMap(150, 570, 170, -170, -100)
+                handleResizeMap(150, 570, 170, -170, -180)
                 break;
             case Regions.Sudeste:
-                handleResizeMap(450, 700, 150, -480, -250)
+                handleResizeMap(450, 700, 150, -480, -340)
                 break;
             case Regions.Sul:
-                handleResizeMap(150, 700, 110, -180, -370)
+                handleResizeMap(150, 700, 110, -180, -480)
                 break;
             default:
                 handleResizeMap(0, 460, 0, 0, 0)
@@ -65,7 +63,7 @@ const BrazilMap: React.FC = () => {
       return  states.map(state => (
                 <View key={state.id}>
                     <Path
-                        onPress={() => handleSelected(state)}
+                        onPress={() => handleSelected(state.id, state.region)}
                         id={state.id}
                         fill={state.pathFill}
                         stroke={state.stroke}
@@ -83,10 +81,24 @@ const BrazilMap: React.FC = () => {
 
 return (
     <SafeAreaView>
-        <View style={{backgroundColor: 'red', flexDirection: 'row', width: '100%'}}>
-            <Text style={{flex: 1}}>Selecione uma Região</Text>
+        <View style={styles.header}>
+            <View style={styles.content1}>
+                <Text style={styles.title}>
+                    {
+                        regionSelect === Regions.Todas ?' Selecione uma Região' : 'Agora escolha um Estado'
+                    }
+                </Text>
+            </View>
         </View>
-        <ScrollView horizontal>
+        <ScrollView>
+            {
+                regionSelect !== Regions.Todas &&
+                <TouchableOpacity
+                    style={styles.btnReturn}
+                    onPress={() => handleSelected(undefined, Regions.Todas)}>
+                    <AntDesign name="closecircle" size={28} color="grey" />
+                </TouchableOpacity>
+            }
             <Svg
                 id="svg-map"
                 style={regionSelect !== Regions.Todas && {marginLeft: resizeRegion.mleft, marginTop: resizeRegion.mtop}}
@@ -95,49 +107,55 @@ return (
                 viewBox={`0 0 ${resizeRegion.box + 80} 460`}>
                 {
                    (regionSelect === Regions.Nordeste || regionSelect === Regions.Todas) &&
-                    <G id='nordeste'>
-                        {
-                            renderMap(DataStates.nordeste)
-                        }
-                    </G>
+                    <G>{ renderMap(DataStates.nordeste) }</G>
                 }
                 {
                     (regionSelect === Regions.Norte || regionSelect === Regions.Todas) &&
-                    <G id='norte'>
-                        {
-                            renderMap(DataStates.norte)
-                        }
-                    </G>
+                    <G>{ renderMap(DataStates.norte) }</G>
                 }
                 {
                     (regionSelect === Regions.Centroeste || regionSelect === Regions.Todas) &&
-                    <G id='centro-oeste'>
-                        {
-                            renderMap(DataStates.centroeste)
-                        }
-                    </G>
+                    <G>{ renderMap(DataStates.centroeste) }</G>
                 }
                 {
                     (regionSelect === Regions.Sudeste || regionSelect === Regions.Todas) &&
-                    <G id='sudeste'>
-                        {
-                            renderMap(DataStates.sudeste)
-                        }
-                    </G>
+                    <G>{ renderMap(DataStates.sudeste) }</G>
                 }
                 {
                     (regionSelect === Regions.Sul || regionSelect === Regions.Todas) &&
-                    <G id='sul'>
-                        {
-                            renderMap(DataStates.sul)
-                        }
-                    </G>
+                    <G>{ renderMap(DataStates.sul) }</G>
                 }
             </Svg>
         </ScrollView>
     </SafeAreaView>
 )};
 
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: 'row',
+        width: '100%'
+    },
+    content1: {
+        flex: 1,
+        alignItems: 'flex-start'
+    },
+    title: {
+        padding: 5,
+        paddingRight: 10,
+        paddingLeft: 10,
+        marginLeft: 10,
+        color: '#423E45',
+        fontSize: 17,
+        borderColor: '#b5b5b5',
+        borderRadius: 15,
+        borderWidth: 1
+    },
+    btnReturn: {
+        marginTop: 50,
+        marginLeft: 30,
+        zIndex: 2
+    }
+  });
 
 export default BrazilMap;
 

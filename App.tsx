@@ -16,7 +16,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: '15%'
@@ -24,7 +23,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: 'bold',
-    margin: 15
+    margin: 35,
   },
   nameStates: {
     color: '#3c38aa'
