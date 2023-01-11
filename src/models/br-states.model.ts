@@ -1,3 +1,55 @@
+export interface PropsMap
+{
+    changeRegion(): Regions;
+    changeState(): States;
+    colorTodas: string;
+    colorNorte: string;
+    colorNordeste: string;
+    colorCentroeste: string;
+    colorSudeste: string;
+    colorSul: string;
+    highlightState: States;
+    highlightStateColor: string;
+    highlightRegion: Regions;
+    highlightRegionColor: string;
+    showRegionOnly: Regions;
+    showStateOnly: States;
+}
+
+export interface ResizeRegions
+{
+    width: number;
+    height: number;
+    box: number;
+    mleft: number;
+    mtop: number;
+}
+
+interface RegionsBr
+{
+    norte: Array<StateBr>;
+    nordeste: Array<StateBr>;
+    centroeste: Array<StateBr>;
+    sudeste: Array<StateBr>;
+    sul: Array<StateBr>;
+}
+
+export interface StateBr
+{
+    id: States,
+    name: string,
+    region: Regions,
+    pathFill: string,
+    stroke: string,
+    pathCode: string,
+    textX: number,
+    textY: number,
+    textFill: string
+    fontSize: number
+}
+
+// Mocks below ↓
+
 export enum States
 {
     AC ='AC',
@@ -38,38 +90,6 @@ export enum Regions
     Sudeste = 'Sudeste',
     Sul = 'Sul',
     Todas = 'Todas'
-}
-
-export interface ResizeRegions
-{
-    width: number;
-    height: number;
-    box: number;
-    mleft: number;
-    mtop: number;
-}
-
-interface RegionsBr
-{
-    norte: Array<StateBr>;
-    nordeste: Array<StateBr>;
-    centroeste: Array<StateBr>;
-    sudeste: Array<StateBr>;
-    sul: Array<StateBr>;
-}
-
-export interface StateBr
-{
-    id: States,
-    name: string,
-    region: Regions,
-    pathFill: string,
-    stroke: string,
-    pathCode: string,
-    textX: number,
-    textY: number,
-    textFill: string
-    fontSize: number
 }
 
 export const DataStates: RegionsBr = {
@@ -408,7 +428,6 @@ export const DataStates: RegionsBr = {
         },
     ],
 }
-
 
 // export enum States
 // {

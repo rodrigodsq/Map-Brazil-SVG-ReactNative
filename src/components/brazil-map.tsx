@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef, FC } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Svg, { G, Path, Text as TextSvg } from 'react-native-svg';
 import { DataStates, Regions, ResizeRegions, StateBr, States } from '../models/br-states.model';
 import { AntDesign } from '@expo/vector-icons';
 
 
-const BrazilMap: React.FC = () => {
+const BrazilMap: FC = () => {
 
     const windowWidth = useWindowDimensions().width;
     const [stateSelect, setStateSelect] = useState<States>();
@@ -18,24 +18,23 @@ const BrazilMap: React.FC = () => {
         mtop: 0
     });
 
-    const handleSelected = useCallback((state: States | undefined, region: Regions) => {
-        setStateSelect(state);
+    const handleSelected = (state: States | undefined, region: Regions) =>
+    {
+        if(regionSelect !== Regions.Todas && region !== Regions.Todas && state)
+        {
+            setStateSelect(state);
+            console.log('pass');
+            return;
+        }
         setRegionSelect(region);
-    }, []);
+        setStateSelect(undefined);
+    };
 
-    const handleResizeMap = useCallback((
-        width: number, height: number, box: number, mleft: number, mtop: number
-    ) => {
-        setResizeRegion({
-            width: windowWidth + width,
-            height: height,
-            box: windowWidth - box,
-            mleft,
-            mtop
-        });
-    }, [])
+    useEffect(() =>{
+        console.log('disparar retorno do state: ' + stateSelect);
+    },[stateSelect])
 
-    useMemo(() => {
+    useEffect(() => {
         switch (regionSelect) {
             case Regions.Nordeste:
                 handleResizeMap(250, 650, 0, -320, -100)
@@ -56,10 +55,22 @@ const BrazilMap: React.FC = () => {
                 handleResizeMap(0, 460, 0, 0, 0)
                 break;
         }
+        console.log('disparar retorno da region: ' + regionSelect)
     }, [regionSelect]);
 
-    const renderMap = useCallback((states: Array<StateBr>) =>
-    {
+    const handleResizeMap = useCallback((
+        width: number, height: number, box: number, mleft: number, mtop: number
+    ) => {
+        setResizeRegion({
+            width: windowWidth + width,
+            height: height,
+            box: windowWidth - box,
+            mleft,
+            mtop
+        });
+    }, []);
+
+    const mapRenderer = useCallback((states: Array<StateBr>) => {
       return  states.map(state => (
                 <View key={state.id}>
                     <Path
@@ -77,7 +88,7 @@ const BrazilMap: React.FC = () => {
                     </TextSvg>
                 </View>
             ))
-    }, [])
+    }, [stateSelect, regionSelect, resizeRegion]);
 
 return (
     <SafeAreaView>
@@ -107,23 +118,23 @@ return (
                 viewBox={`0 0 ${resizeRegion.box + 80} 460`}>
                 {
                    (regionSelect === Regions.Nordeste || regionSelect === Regions.Todas) &&
-                    <G>{ renderMap(DataStates.nordeste) }</G>
+                    <G>{ mapRenderer(DataStates.nordeste) }</G>
                 }
                 {
                     (regionSelect === Regions.Norte || regionSelect === Regions.Todas) &&
-                    <G>{ renderMap(DataStates.norte) }</G>
+                    <G>{ mapRenderer(DataStates.norte) }</G>
                 }
                 {
                     (regionSelect === Regions.Centroeste || regionSelect === Regions.Todas) &&
-                    <G>{ renderMap(DataStates.centroeste) }</G>
+                    <G>{ mapRenderer(DataStates.centroeste) }</G>
                 }
                 {
                     (regionSelect === Regions.Sudeste || regionSelect === Regions.Todas) &&
-                    <G>{ renderMap(DataStates.sudeste) }</G>
+                    <G>{ mapRenderer(DataStates.sudeste) }</G>
                 }
                 {
                     (regionSelect === Regions.Sul || regionSelect === Regions.Todas) &&
-                    <G>{ renderMap(DataStates.sul) }</G>
+                    <G>{ mapRenderer(DataStates.sul) }</G>
                 }
             </Svg>
         </ScrollView>
